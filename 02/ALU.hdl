@@ -43,10 +43,10 @@ CHIP ALU {
 
     PARTS:
         //not area
-        Not16(in=x, out=notx);
-        Not16(in=y, out=noty);
+        Not16(in=zxout, out=notx);
+        Not16(in=zyout, out=noty);
         Not16(in=fout, out=nfout);
-    //    Not16(in[0..7]=ro1, in[8..14]=ro2, in[15]=ro3, out[0..7]=nro1, out[8..14]=nro2, out[15]=nro3);
+//        Not16(in[0..7]=ro1, in[8..15]=ro2, out[0..7]=nro1, out[8..15]=nro2);
 
         // x processing
         Mux16(a=x, b=false, sel=zx, out=zxout);
@@ -59,20 +59,17 @@ CHIP ALU {
         // f processing
         And16(a=nxout, b=nyout, out=andout);
         Add16(a=nxout, b=nyout, out=adderout);
-        Mux16(a=adderout, b=andout, sel=f, out=fout);
+        Mux16(a=andout, b=adderout, sel=f, out=fout);
 
         // no processing && set ALU out.
-        Mux16(a=fout, b=nfout, sel=no, out=out);//, out[0..7]=ro1, out[8..14]=ro2, out[15]=ro3);
-
-
-/**
-        // ng out
-        Or8Way(in[0]=ro3, in[1..7]=false, out=ng);
+        Mux16(a=fout, b=nfout, sel=no, out[0..7]=ro1, out[8..15]=ro2, out[15]=ng, out=out);
 
         // zr out
-        Or8Way(in=nro1, out=zr1);
-        Or8Way(in[0..6]=nro2, in[7]=nro3, out=zr2);
-        Or(a=zr1, b=zr2, out=zr);
+        Or8Way(in=ro1, out=zr1);
+        Or8Way(in=ro2, out=zr2);
+        Or(a=zr1, b=zr2, out=zr3);
+        Not(in=zr3, out=zr);
 
-*/
+
+
 }
