@@ -13,8 +13,6 @@
 	D=M
 	@COUNT
 	M=D
-	@PRODUCT
-	M=0
 (LOOP)
 	@COUNT
 	D=M
