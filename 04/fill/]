@@ -1,0 +1,32 @@
+// "Paint the whole screen black" 
+// 16384 is the beginning of the screens' memory address
+//RAM[16384+r*32+c/16]  (r = row, c = column
+// 256 rows 512px per row
+//@RAM[16384+100*32+100/16]
+	@256
+	D=A
+	@counter
+	M=D
+	@16385
+	D=A
+	@addr
+	M=D
+(LOOP)
+	@counter
+	D=M
+	@END
+	D;JEQ
+	@addr
+	A=M
+	M=-1
+	@addr
+	D=M
+	@32
+	D=D+A
+	@addr
+	M=D
+	@counter
+	M=M-1
+	@LOOP
+	0;JMP
+(END)
