@@ -1,38 +1,38 @@
-// "Paint the whole screen black" 
-// 16384 is the beginning of the screens' memory address
-//RAM[16384+r*32+c/16]  (r = row, c = column
-// 256 rows 512px per row
-
-
-//set up listener for keyboard
-
+(INFINITE_LOOP)
 	@SCREEN
 	D=A
 	@addr
 	M=D
-	@8192		//Initialize counter
-	D=A
-	@counter
-	M=D
-	@addr		// Paint addr -1
-	A=M
-	M=-1	
-	(LOOP)			//Paint left to right
-		@counter	//Check counter for end
-		D=M
-		@END
+	(LOOP)		//Paint left to right
+		@KBD
+		D=A
+		@addr		// Pull value of KBD (end) - address
+		D=D-M
+		@INFINITE_LOOP	// Skip painting
 		D;JEQ
-		@addr		//Paint addr -1
-		A=M
-		M=-1	
-		@addr		//Change addr loc
-		D=M
-		@1
-		D=D+A
 		@addr
-		M=D
-		@counter	//Decrement counter
-		M=M-1
-		@LOOP
-		0;JMP		//Break 
-	(END)
+		A=M
+		@KBD		// Pull value saved @KBD
+		D=M
+		@PAINT		// Jump to PAINT if M@KBD > 0
+		D;JGT
+		@addr		// Paint screen white
+		A=M
+		M=0
+		@addr
+		M=M+1
+		@INCREMENT	// Jump to increment (skip PAINT black)
+		0;JMP
+		(PAINT)		// Paint Screen Black
+			@addr
+			A=M
+			M=-1
+			@addr
+			M=M+1
+		(INCREMENT)		//Decrement counter
+			@counter	
+			M=M-1
+			@LOOP		//Jump to loop
+			0;JMP		
+			@INFINITE_LOOP	// Continue to loop whole program
+			0;JMP
