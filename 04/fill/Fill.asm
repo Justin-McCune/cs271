@@ -30,8 +30,8 @@
 			@addr
 			M=M+1
 		(INCREMENT)		//Decrement counter
-			@counter	
-			M=M-1
+			//@counter	
+			//M=M-1
 			@LOOP		//Jump to loop
 			0;JMP		
 			@INFINITE_LOOP	// Continue to loop whole program
