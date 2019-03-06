@@ -6,23 +6,23 @@
 /**
  * The Hack CPU (Central Processing unit), consisting of an ALU,
  * two registers named A and D, and a program counter named PC.
- * The CPU is designed to fetch and execute instructions written in 
+ * The CPU is designed to fetch and execute instructions written in
  * the Hack machine language. In particular, functions as follows:
- * Executes the inputted instruction according to the Hack machine 
+ * Executes the inputted instruction according to the Hack machine
  * language specification. The D and A in the language specification
  * refer to CPU-resident registers, while M refers to the external
- * memory location addressed by A, i.e. to Memory[A]. The inM input 
- * holds the value of this location. If the current instruction needs 
- * to write a value to M, the value is placed in outM, the address 
- * of the target location is placed in the addressM output, and the 
- * writeM control bit is asserted. (When writeM==0, any value may 
- * appear in outM). The outM and writeM outputs are combinational: 
- * they are affected instantaneously by the execution of the current 
- * instruction. The addressM and pc outputs are clocked: although they 
- * are affected by the execution of the current instruction, they commit 
- * to their new values only in the next time step. If reset==1 then the 
- * CPU jumps to address 0 (i.e. pc is set to 0 in next time step) rather 
- * than to the address resulting from executing the current instruction. 
+ * memory location addressed by A, i.e. to Memory[A]. The inM input
+ * holds the value of this location. If the current instruction needs
+ * to write a value to M, the value is placed in outM, the address
+ * of the target location is placed in the addressM output, and the
+ * writeM control bit is asserted. (When writeM==0, any value may
+ * appear in outM). The outM and writeM outputs are combinational:
+ * they are affected instantaneously by the execution of the current
+ * instruction. The addressM and pc outputs are clocked: although they
+ * are affected by the execution of the current instruction, they commit
+ * to their new values only in the next time step. If reset==1 then the
+ * CPU jumps to address 0 (i.e. pc is set to 0 in next time step) rather
+ * than to the address resulting from executing the current instruction.
  */
 
 CHIP CPU {
@@ -34,10 +34,73 @@ CHIP CPU {
                          // the current program (reset==0).
 
     OUT outM[16],        // M value output
-        writeM,          // Write to M? 
+        writeM,          // Write to M?
         addressM[15],    // Address in data memory (of M)
         pc[15];          // address of next instruction
 
     PARTS:
-    // Put your code here:
+    // Not the [15], so that it fits better into the Mux chips.
+    Not(in=instruction[15], out=not15);
+
+    // Are we loading the 15 bit constant or the ALU output?
+    Mux16(a=aluOut, b=instruction, sel=not15, out=muxOut);
+
+    // A reg, ![15] || [5]
+    // OUT :: addressM
+    Or(a=not15, b=instruction[5], out=aLoad);
+    ARegister(in=muxOut, load=aLoad, out=aRegOut, out[0..14]=addressM);
+
+    // A or M
+    And(a=instruction[15], b=instruction[12], out=amSel);
+    Mux16(a=aRegOut, b=inM, sel=amSel, out=amOut);
+
+    //  OUT : outM
+    ALU(x=dRegOut, y=amOut,
+        zx=instruction[11],
+        nx=instruction[10],
+        zy=instruction[9],
+        ny=instruction[8],
+        f=instruction[7],
+        no=instruction[6],
+        out=outM, out=aluOut, zr=zrOut, ng=ngOut);
+
+    // D reg, ![15]&[4]
+    And(a=instruction[15], b=instruction[4], out=dLoad);
+    DRegister(in=aluOut, load=dLoad, out=dRegOut);
+
+    // PC / Reset business
+    // OUT :: pc
+    PC(in=aRegOut,
+        load=loadPC,
+        inc=true,
+        reset=reset,
+        out[0..14]=pc);
+
+        // Building the load for PC:
+    Not(in=ngOut, out=positive);
+    Not(in=zrOut, out=notZero);
+        // j1
+    And(a=instruction[15], b=instruction[2], out=j1);
+    And(a=ngOut, b=notZero, out=ngNz);
+    And(a=j1, b=ngNz, out=load1);
+        // j2
+    And(a=instruction[15], b=instruction[1], out=j2);
+    And(a=j2, b=zrOut, out=load2);
+        // j3
+    And(a=instruction[15], b=instruction[0], out=j3);
+    And(a=positive, b=notZero, out=posNz);
+    And(a=posNz, b=j3, out=load3);
+        // load
+    Or(a=load1, b=load2, out=loadA);
+    Or(a=load3, b=loadA, out=loadPC);
+
+
+    // OUT :: writeM ?
+    And(a=instruction[15], b=instruction[3], out=writeM);
+
+
+
+
+
+
 }
