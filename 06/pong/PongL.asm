@@ -5,6 +5,9 @@
 
 // Symbol-less version of the Pong.asm program.
 
+
+
+
 @256
 D=A
 @0
@@ -24,6 +27,7 @@ D;JNE
 @0
 A=M-1
 M=-1
+
 @15
 A=M
 0;JMP
@@ -40,6 +44,7 @@ D;JLE
 @0
 A=M-1
 M=-1
+
 @15
 A=M
 0;JMP
@@ -56,6 +61,7 @@ D;JGE
 @0
 A=M-1
 M=-1
+
 @15
 A=M
 0;JMP

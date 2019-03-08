@@ -3,25 +3,33 @@
 # Author : Justin Clayton McCune
 # Date : 3-7-2019
 
+## To add full functionality :
+    # strip anything starting with a paren
+    # strip the r after the @
+    # concerning 'variables'
+        # when we encounter a new variable, search the list
+        # if it exists, give it the relavant address
+        # if it does not exist store the variable in the list with a ROM location
+
+
 
 #   variable declarations
 lineList=[]                         #list of lines from the file
 
 #comp bits
     #Destination bit list
-destList = ["D", "M"]
-binDestList = ["010", "001"]
+destList =    ["D",   "M",   "A",   "MD",  "AM",  "AD",  "AMD"]
+binDestList = ["010", "001", "100", "011", "101", "110", "111"]
     #Compute bit list
-compList = ["M", "D-M", "D"]
-binCompList = ["1110000", "1010011", "0001100"]
-
-#jump bits
-    #Jump parameter bit list
-parmList = ["D", "0"]
+compList =    ["0",       "1",       "-1",      "D",        "A",       "!D",      "!A",      "-D",      "-A",      "D+1",      "A+1",     "D-1",     "A-1",     "D+A",     "D-A",     "A-D",     "D&A",     "D|A",
+                    "M",       "!M",      "-M",      "M-1",     "D+M",     "D-M",     "M-D",     "D&M",     "D|M"]
+binCompList = ["0101010", "0111111", "0111010", "0001100",  "0110000", "0001101", "0110001", "0001111", "0110011", "0011111",  "0110111", "0001110", "0110010", "0000010", "0010011", "0000111", "0000000", "0010101",
+                    "1110000", "1110001", "1110011", "1110010", "1000010", "1010011", "1000111", "1000000", "1010101" ]
+    #jump bits
+parmList =    ["D",      "0"]
 binParmList = ["001100", "101010"]
-    #Jump condition bit list
-conditionList = ["JGT", "JEQ", "JGE", "JLT", "JNE", "JLE", "JMP"]
-binConditionList = ["001", "010", "011", "100", "101", "110", "111" ]
+conditionList =    ["JGT", "JEQ", "JGE", "JLT", "JNE", "JLE", "JMP"]
+binConditionList = ["001", "010", "011", "100", "101", "110", "111"]
 
 
 #open import file
@@ -79,26 +87,42 @@ def address_function(word):
     #establish a new binary command for each line passed
     binary = ""
     bitList =[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-    #process the line, modify appropriate bits
+
+
+    #specified ROM address
+    if(word[1].isdigit() or word[2].isdigit()):
+        if(word[2].isdigit()):
+            #shed the R, and move on
+            word=word.replace("R", "")
+            #shed the @
+        newWord = word[1:]
         #convert to binary and strip leading jazz
-    newWord = word[1:]
-    binNum = bin(int(newWord))
-    binNum = binNum[2:]
+        binNum = bin(int(newWord))
+        binNum = binNum[2:]
         #put binary number into list for easier manipulation
-    binList=[]
-    for x in binNum:
-        binList.append(x)
+        binList=[]
+        for x in binNum:
+            binList.append(x)
         #reverse binList, merge into bitList, reverse again
-    binList.reverse()
-    indx = 0
-    while indx < len(binList):
-        bitList[indx]=binList[indx]
-        indx+=1
-    bitList.reverse()
+        binList.reverse()
+        indx = 0
+        while indx < len(binList):
+            bitList[indx]=binList[indx]
+            indx+=1
+        bitList.reverse()
         #concatonate the bitList and send to apppending_function
-    for bit in bitList:
-        binary += str(bit)
-    appending_function(binary)
+        for bit in bitList:
+            binary += str(bit)
+            appending_function(binary)
+    #no specified ROM address
+    else:
+        word=word.replace("@","")
+        #now we have a 'Variable', it needs to be paired with an address_function
+        # we could read through all of the @R commands first to build our variables table
+        # then run through the file a second time, this time calling appending_function()
+    variables = ["tomatoe", "burger", "burrito", "soup"]
+
+
 
 #function to push binary code into new file
 def appending_function(binary):
@@ -113,7 +137,7 @@ length = len(lineList)
 indx = 0
 while indx < length:
     word = lineList[indx]
-    if (word[0]=="/" or word[0]=="\r"):
+    if (word[0]=="/" or word[0]=="\r" or word[0]=="("):
         del lineList[indx]
         length = len(lineList)
     else:
