@@ -47,15 +47,22 @@ def address_function(word):
         binary += str(bit)
     appending_function(binary)
 
-def d_function(word):
-    if(word[2]=="M" and len(word)==5):
-        appending_function('1111110000010000')
+def comp_function(word):
+    #filter jump functions
+    if(word[1]==";"):
+        jump_function(word)
+    #comp instructions:
+        # 16 bit instruction : 111accccccdddjjj
+        # .asm file format : dest = compute
+    split=word.split("=")
+        # split[0] is the destination | split[1] is the compute function
+        # from here I think we will have to build a list of what each dest / comp commands translate to
 
-    print(len(word))
-def m_function(word):
+
+
+def jump_function(word):    ## needs to be written
     print(" ")
-def jump_function(word):
-    print(" ")
+
 
 #function to push binary code into new file
 def appending_function(binary):
@@ -83,15 +90,9 @@ indx = 0
 while indx < length:
     word = lineList[indx]
     if(word[0]=="@"):
-        #call a function to deal will a-address commands
+        #call a function to deal will address commands
         address_function(word)
-    elif(word[0]=="D" and word[1]=="="):
-        #call a function to deal with d=address commands
-        d_function(word)
-    elif(word[0]=="M" and word[1]=="="):
-        #call function to deal with m=address commands
-        m_function(word)
-    elif(word[1]==";"):
-        #call a function to deal with jump commands
-        jump_function(word)
+    else:
+        #call a function to deal with comp commands
+        comp_function(word)
     indx += 1
