@@ -12,6 +12,7 @@
         # if it does not exist store the variable in the list with a ROM location
 
 #Hola mis amigos
+#de donde eres?
 
 #   variable declarations
 lineList=[]                         #list of lines from the file
